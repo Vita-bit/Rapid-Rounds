@@ -1,3 +1,6 @@
+use project::session::game_session::Game;
+
 fn main() {
-    println!("Hello, world!");
+    let mut game: Game = Game::new();
+    game.init();
 }
