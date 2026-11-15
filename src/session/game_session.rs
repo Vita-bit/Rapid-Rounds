@@ -1,4 +1,4 @@
-use bevy::input::common_conditions::input_just_pressed;
+use bevy::input::common_conditions::*;
 use bevy::prelude::*;
 use bevy::window::*;
 
