@@ -1,6 +1,6 @@
-use project::session::game_session::Game;
+use bevy::prelude::*;
+use project::session::game_session::GamePlugin;
 
 fn main() {
-    let mut game: Game = Game::new();
-    game.init();
+    App::new().add_plugins(GamePlugin).run();
 }
