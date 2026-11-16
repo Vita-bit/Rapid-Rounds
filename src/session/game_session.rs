@@ -1,6 +1,9 @@
 use bevy::input::common_conditions::*;
 use bevy::prelude::*;
 use bevy::window::*;
+use crate::homescreen::plugin::HomescreenPlugin;
+use crate::lobby::plugin::LobbyPlugin;
+use crate::session::states::AppState;
 
 pub struct Game {
     app: App
@@ -19,9 +22,9 @@ impl Game {
                     primary_window: Some(Self::create_game_window()),
                     ..default()
                 }))
-            .insert_resource(ClearColor(Color::hsl(0f32, 0f32, 1f32)))
+            .init_state::<AppState>()
+            .add_plugins((HomescreenPlugin, LobbyPlugin))
             .add_systems(Update, Self::change_window_mode.run_if(input_just_pressed(KeyCode::F11)))
-            .add_systems(Startup, Self::spawn_camera)
             .run();
     }
 
@@ -39,9 +42,5 @@ impl Game {
             WindowMode::BorderlessFullscreen(MonitorSelection::Primary) => WindowMode::Windowed,
             _ => WindowMode::BorderlessFullscreen(MonitorSelection::Primary),
         };
-    }
-
-    fn spawn_camera(mut commands: Commands) {
-        commands.spawn(Camera2d);
     }
 }
