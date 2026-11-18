@@ -75,7 +75,7 @@ fn settings_button() -> impl Bundle {
             border: UiRect::all(px(5)),
             justify_content: JustifyContent::Center,
             align_items: AlignItems::Center,
-            margin: UiRect { left: Val::Px(50f32), right: Val::Px(50f32), top: Val::Px(50f32), bottom: Val::Px(0f32) },
+            margin: UiRect { left: Val::Px(50f32), right: Val::Px(50f32), top: Val::Px(20f32), bottom: Val::Px(0f32) },
             border_radius: BorderRadius::all(Val::Px(20f32)),
             ..default()
         },
