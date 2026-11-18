@@ -5,5 +5,6 @@ pub enum AppState {
     #[default]
     Homescreen,
     Lobby,
-    Settings
+    Settings,
+    Loading
 }
