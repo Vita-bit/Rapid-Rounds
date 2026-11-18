@@ -48,7 +48,6 @@ fn startgame_button() -> impl Bundle {
             justify_content: JustifyContent::Center,
             align_items: AlignItems::Center,
             margin: UiRect { left: Val::Px(50f32), right: Val::Px(50f32), top: Val::Px(20f32), bottom: Val::Px(0f32) },
-            border_radius: BorderRadius::all(Val::Px(20f32)),
             ..default()
         },
         BorderColor::all(Color::BLACK),
@@ -76,7 +75,6 @@ fn settings_button() -> impl Bundle {
             justify_content: JustifyContent::Center,
             align_items: AlignItems::Center,
             margin: UiRect { left: Val::Px(50f32), right: Val::Px(50f32), top: Val::Px(20f32), bottom: Val::Px(0f32) },
-            border_radius: BorderRadius::all(Val::Px(20f32)),
             ..default()
         },
         BorderColor::all(Color::BLACK),

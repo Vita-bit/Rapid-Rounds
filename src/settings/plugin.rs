@@ -12,7 +12,7 @@ impl Plugin for SettingsPlugin {
 }
 
 fn setup_settings(mut commands: Commands) {
-    commands.insert_resource(ClearColor(Color::hsl(0.5f32, 0.8f32, 0.1f32)));
+    commands.insert_resource(ClearColor(Color::hsl(110f32, 1f32, 0.27f32)));
 
     commands.spawn((
         Camera3d::default(),
