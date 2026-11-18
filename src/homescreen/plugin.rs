@@ -111,9 +111,9 @@ fn setup_homescreen_buttons(mut commands: Commands) {
             ),
             (
                 settings_button(),
-                /*observe(|_activate: On<Activate>, mut next: ResMut<NextState<AppState>>| {
-                    //TODO - add settings appstate
-                }),*/
+                observe(|_activate: On<Activate>, mut next: ResMut<NextState<AppState>>| {
+                    next.set(AppState::Settings);
+                }),
             )
         ],
         DespawnOnExit(AppState::Homescreen),

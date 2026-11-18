@@ -4,5 +4,6 @@ use bevy::prelude::*;
 pub enum AppState {
     #[default]
     Homescreen,
-    Lobby
+    Lobby,
+    Settings
 }
