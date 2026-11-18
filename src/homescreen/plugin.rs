@@ -15,7 +15,7 @@ struct RRSettingsButton;
 impl Plugin for HomescreenPlugin {
     fn build(&self, app: &mut App) {
         app
-            .add_systems(OnEnter(AppState::Homescreen), (setup_homescreen, setup_homescreen_buttons).chain())
+            .add_systems(OnEnter(AppState::Homescreen), (setup_homescreen, setup_homescreen_buttons, test_3d).chain())
             .add_systems(Update, (homescreen_input, update_startgame_button_appearance, update_settings_button_appearance).run_if(in_state(AppState::Homescreen)));
     }
 }
@@ -148,7 +148,6 @@ fn update_startgame_button_appearance(
                 border_color.set_all(Color::WHITE);
             },
             (true, false) => {
-                **text = "Hovered".to_string();
                 **color = Color::WHITE;
                 *bg_color = BackgroundColor(Color::hsl(0f32, 0f32, 0.55f32));
                 border_color.set_all(Color::BLACK);
@@ -193,7 +192,6 @@ fn update_settings_button_appearance(
                 border_color.set_all(Color::WHITE);
             },
             (true, false) => {
-                **text = "Hovered".to_string();
                 **color = Color::WHITE;
                 *bg_color = BackgroundColor(Color::hsl(0f32, 0f32, 0.55f32));
                 border_color.set_all(Color::BLACK);
@@ -206,4 +204,26 @@ fn update_settings_button_appearance(
             }
         }
     }
+}
+
+fn test_3d
+(
+    mut commands: Commands,
+    assets: Res<AssetServer>,
+)
+{
+    commands.spawn((
+        WorldAssetRoot(assets.load(GltfAssetLabel::Scene(0).from_asset("test.glb"))),
+        Transform::from_xyz(0f32, 0f32, 0f32),
+        DespawnOnExit(AppState::Homescreen),
+    ));
+
+    commands.spawn((
+        DirectionalLight {
+            shadow_maps_enabled: true,
+            ..default()
+        },
+        Transform::from_xyz(4f32, 8f32, 4f32).looking_at(Vec3::ZERO, Vec3::Y),
+        DespawnOnExit(AppState::Homescreen),
+    ));
 }
