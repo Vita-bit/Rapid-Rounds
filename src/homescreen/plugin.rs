@@ -22,9 +22,6 @@ struct RRStartgameButton;
 struct RRSettingsButton;
 
 #[derive(Component)]
-struct RRJoinGameButton;
-
-#[derive(Component)]
 struct RRCameraPosInfo;
 
 #[derive(SubStates, Clone, Eq, PartialEq, Hash, Debug, Default)]
@@ -32,7 +29,8 @@ struct RRCameraPosInfo;
 pub enum HomescreenSubstates {
     #[default]
     Menu,
-    ChoosingGame
+    ChoosingGame,
+    Loading,
 }
 
 impl Plugin for HomescreenPlugin {
@@ -40,8 +38,27 @@ impl Plugin for HomescreenPlugin {
         app
             .add_sub_state::<HomescreenSubstates>()
             .add_plugins((ChoosingGamePlugin, MenuPlugin))
-            .add_systems(OnEnter(AppState::Homescreen), (setup_homescreen, setup_homescreen_buttons, test_3d).chain())
-            .add_systems(Update, (homescreen_input, update_startgame_button_appearance, update_settings_button_appearance, update_join_game_button_appearance, move_camera_input, update_camera_info).run_if(in_state(AppState::Homescreen)));
+            .add_systems
+                (
+                    OnEnter(AppState::Homescreen),
+                    (
+                        setup_homescreen,
+                        setup_homescreen_buttons,
+                        test_3d
+                    ).chain()
+                )
+            .add_systems
+                (
+                    Update,
+                    (
+                        homescreen_input,
+                        update_startgame_button_appearance,
+                        update_settings_button_appearance,
+                        move_camera_input,
+                        update_camera_info
+                    )
+                    .run_if(in_state(AppState::Homescreen))
+                );
     }
 }
 
@@ -62,7 +79,13 @@ fn homescreen_input(keys: Res<ButtonInput<KeyCode>>, mut next: ResMut<NextState<
     }
 }
 
-fn move_camera_input(keys: Res<ButtonInput<KeyCode>>, time: Res<Time>, camera: Single<(&mut Transform, &mut HomescreenCamera)>) {
+fn move_camera_input
+(
+    keys: Res<ButtonInput<KeyCode>>,
+    time: Res<Time>,
+    camera: Single<(&mut Transform, &mut HomescreenCamera)>
+)
+{
     let (mut transform, mut cam) = camera.into_inner();
 
     let speed = 0.5f32;
@@ -152,36 +175,9 @@ fn settings_button() -> impl Bundle {
     )
 }
 
-fn join_game_button() -> impl Bundle {
-    (
-        Button,
-        RRJoinGameButton,
-        Hovered::default(),
-        Node {
-            width: percent(100),
-            height: px(65),
-            border: UiRect::all(px(5)),
-            justify_content: JustifyContent::Center,
-            align_items: AlignItems::Center,
-            margin: UiRect { left: Val::Px(50f32), right: Val::Px(50f32), top: Val::Px(20f32), bottom: Val::Px(0f32) },
-            ..default()
-        },
-        BorderColor::all(Color::BLACK),
-        BackgroundColor(Color::WHITE),
-        children![(
-            Text::new("Join Game"),
-            TextFont {
-                font_size: FontSize::Px(33f32),
-                ..default()
-            },
-            TextColor(Color::BLACK),
-        )],
-    )
-}
-
 fn camera_info_text() -> impl Bundle {
     (
-        Text::new("No position"),
+        Text::new("No camera found"),
         RRCameraPosInfo,
         TextFont {
             font_size: FontSize::Px(15f32),
@@ -218,12 +214,6 @@ fn setup_homescreen_buttons(mut commands: Commands) {
                 settings_button(),
                 observe(|_activate: On<Activate>, mut next: ResMut<NextState<AppState>>| {
                     next.set(AppState::Settings);
-                }),
-            ),
-            (
-                join_game_button(),
-                observe(|_activate: On<Activate>, mut next: ResMut<NextState<HomescreenSubstates>>| {
-                    next.set(HomescreenSubstates::ChoosingGame);
                 }),
             ),
             (
@@ -314,50 +304,6 @@ fn update_settings_button_appearance(
             },
             (false, false) => {
                 **text = "Settings".to_string();
-                **color = Color::BLACK;
-                *bg_color = BackgroundColor(Color::WHITE);
-                border_color.set_all(Color::BLACK);
-            }
-        }
-    }
-}
-
-fn update_join_game_button_appearance(
-    mut buttons: Query
-        <
-        (
-            &Hovered,
-            Has<Pressed>,
-            &mut BackgroundColor,
-            &mut BorderColor,
-            &Children
-        ),
-        (
-            With<Button>,
-            With<RRJoinGameButton>
-        ),
-        >,
-    mut text_query: Query<(&mut Text, &mut TextColor)>
-)
-{
-    for (hovered, pressed, mut bg_color, mut border_color, children) in &mut buttons {
-        let Ok((mut text, mut color)) = text_query.get_mut(children[0]) else {
-            continue;
-        };
-        match (hovered.get(), pressed) {
-            (_, true) => {
-                **text = "Loading...".to_string();
-                **color = Color::WHITE;
-                *bg_color = BackgroundColor(Color::BLACK);
-                border_color.set_all(Color::WHITE);
-            },
-            (true, false) => {
-                **color = Color::WHITE;
-                *bg_color = BackgroundColor(Color::hsl(0f32, 0f32, 0.55f32));
-                border_color.set_all(Color::BLACK);
-            },
-            (false, false) => {
-                **text = "Join Game".to_string();
                 **color = Color::BLACK;
                 *bg_color = BackgroundColor(Color::WHITE);
                 border_color.set_all(Color::BLACK);
