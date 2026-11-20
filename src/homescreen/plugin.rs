@@ -12,11 +12,14 @@ struct RRStartgameButton;
 #[derive(Component)]
 struct RRSettingsButton;
 
+#[derive(Component)]
+struct RRJoinGameButton;
+
 impl Plugin for HomescreenPlugin {
     fn build(&self, app: &mut App) {
         app
             .add_systems(OnEnter(AppState::Homescreen), (setup_homescreen, setup_homescreen_buttons, test_3d).chain())
-            .add_systems(Update, (homescreen_input, update_startgame_button_appearance, update_settings_button_appearance).run_if(in_state(AppState::Homescreen)));
+            .add_systems(Update, (homescreen_input, update_startgame_button_appearance, update_settings_button_appearance, update_join_game_button_appearance).run_if(in_state(AppState::Homescreen)));
     }
 }
 
@@ -25,7 +28,7 @@ fn setup_homescreen(mut commands: Commands) {
 
     commands.spawn((
         Camera3d::default(),
-        Transform::from_xyz(0f32, 5f32, 10f32).looking_at(Vec3::ZERO, Vec3::Y),
+        Transform::from_xyz(15f32, 5f32, 10f32).looking_at(Vec3::ZERO, Vec3::Y),
         DespawnOnExit(AppState::Homescreen),
     ));
 }
@@ -90,6 +93,33 @@ fn settings_button() -> impl Bundle {
     )
 }
 
+fn join_game_button() -> impl Bundle {
+    (
+        Button,
+        RRJoinGameButton,
+        Hovered::default(),
+        Node {
+            width: percent(100),
+            height: px(65),
+            border: UiRect::all(px(5)),
+            justify_content: JustifyContent::Center,
+            align_items: AlignItems::Center,
+            margin: UiRect { left: Val::Px(50f32), right: Val::Px(50f32), top: Val::Px(20f32), bottom: Val::Px(0f32) },
+            ..default()
+        },
+        BorderColor::all(Color::BLACK),
+        BackgroundColor(Color::WHITE),
+        children![(
+            Text::new("Join Game"),
+            TextFont {
+                font_size: FontSize::Px(33.0),
+                ..default()
+            },
+            TextColor(Color::BLACK),
+        )],
+    )
+}
+
 fn setup_homescreen_buttons(mut commands: Commands) {
     commands.spawn((
         Node {
@@ -111,6 +141,12 @@ fn setup_homescreen_buttons(mut commands: Commands) {
                 settings_button(),
                 observe(|_activate: On<Activate>, mut next: ResMut<NextState<AppState>>| {
                     next.set(AppState::Settings);
+                }),
+            ),
+            (
+                join_game_button(),
+                observe(|_activate: On<Activate>| {
+
                 }),
             )
         ],
@@ -198,6 +234,50 @@ fn update_settings_button_appearance(
             },
             (false, false) => {
                 **text = "Settings".to_string();
+                **color = Color::BLACK;
+                *bg_color = BackgroundColor(Color::WHITE);
+                border_color.set_all(Color::BLACK);
+            }
+        }
+    }
+}
+
+fn update_join_game_button_appearance(
+    mut buttons: Query
+        <
+        (
+            &Hovered,
+            Has<Pressed>,
+            &mut BackgroundColor,
+            &mut BorderColor,
+            &Children
+        ),
+        (
+            With<Button>,
+            With<RRJoinGameButton>
+        ),
+        >,
+    mut text_query: Query<(&mut Text, &mut TextColor)>
+)
+{
+    for (hovered, pressed, mut bg_color, mut border_color, children) in &mut buttons {
+        let Ok((mut text, mut color)) = text_query.get_mut(children[0]) else {
+            continue;
+        };
+        match (hovered.get(), pressed) {
+            (_, true) => {
+                **text = "Loading...".to_string();
+                **color = Color::WHITE;
+                *bg_color = BackgroundColor(Color::BLACK);
+                border_color.set_all(Color::WHITE);
+            },
+            (true, false) => {
+                **color = Color::WHITE;
+                *bg_color = BackgroundColor(Color::hsl(0f32, 0f32, 0.55f32));
+                border_color.set_all(Color::BLACK);
+            },
+            (false, false) => {
+                **text = "Join Game".to_string();
                 **color = Color::BLACK;
                 *bg_color = BackgroundColor(Color::WHITE);
                 border_color.set_all(Color::BLACK);
