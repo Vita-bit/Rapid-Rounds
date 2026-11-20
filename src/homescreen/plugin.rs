@@ -24,6 +24,9 @@ struct RRSettingsButton;
 #[derive(Component)]
 struct RRJoinGameButton;
 
+#[derive(Component)]
+struct RRCameraPosInfo;
+
 #[derive(SubStates, Clone, Eq, PartialEq, Hash, Debug, Default)]
 #[source(AppState = AppState::Homescreen)]
 pub enum HomescreenSubstates {
@@ -38,7 +41,7 @@ impl Plugin for HomescreenPlugin {
             .add_sub_state::<HomescreenSubstates>()
             .add_plugins((ChoosingGamePlugin, MenuPlugin))
             .add_systems(OnEnter(AppState::Homescreen), (setup_homescreen, setup_homescreen_buttons, test_3d).chain())
-            .add_systems(Update, (homescreen_input, update_startgame_button_appearance, update_settings_button_appearance, update_join_game_button_appearance, move_camera_input).run_if(in_state(AppState::Homescreen)));
+            .add_systems(Update, (homescreen_input, update_startgame_button_appearance, update_settings_button_appearance, update_join_game_button_appearance, move_camera_input, update_camera_info).run_if(in_state(AppState::Homescreen)));
     }
 }
 
@@ -63,8 +66,10 @@ fn move_camera_input(keys: Res<ButtonInput<KeyCode>>, time: Res<Time>, camera: S
     let (mut transform, mut cam) = camera.into_inner();
 
     let speed = 0.5f32;
+    let smoothing = 6f32;
     let forward = transform.forward().with_y(0f32).normalize_or_zero();
     let right = transform.right().with_y(0f32).normalize_or_zero();
+
     let mut dir = Vec3::ZERO;
 
     if keys.pressed(KeyCode::KeyW) {
@@ -89,7 +94,7 @@ fn move_camera_input(keys: Res<ButtonInput<KeyCode>>, time: Res<Time>, camera: S
     let target_velocity = dir.normalize_or_zero() * speed;
     let delta_time = time.delta_secs();
 
-    cam.velocity.smooth_nudge(&target_velocity, 6f32, delta_time);
+    cam.velocity.smooth_nudge(&target_velocity, smoothing, delta_time);
     transform.translation += cam.velocity;
 }
 
@@ -166,11 +171,29 @@ fn join_game_button() -> impl Bundle {
         children![(
             Text::new("Join Game"),
             TextFont {
-                font_size: FontSize::Px(33.0),
+                font_size: FontSize::Px(33f32),
                 ..default()
             },
             TextColor(Color::BLACK),
         )],
+    )
+}
+
+fn camera_info_text() -> impl Bundle {
+    (
+        Text::new("No position"),
+        RRCameraPosInfo,
+        TextFont {
+            font_size: FontSize::Px(15f32),
+            ..default()
+        },
+        TextColor(Color::BLACK),
+        Node {
+            position_type: PositionType::Absolute,
+            bottom : px(5),
+            left : px(5),
+            ..default()
+        }
     )
 }
 
@@ -202,6 +225,9 @@ fn setup_homescreen_buttons(mut commands: Commands) {
                 observe(|_activate: On<Activate>, mut next: ResMut<NextState<HomescreenSubstates>>| {
                     next.set(HomescreenSubstates::ChoosingGame);
                 }),
+            ),
+            (
+                camera_info_text()
             )
         ],
         DespawnOnExit(AppState::Homescreen),
@@ -338,6 +364,16 @@ fn update_join_game_button_appearance(
             }
         }
     }
+}
+
+fn update_camera_info
+(
+    mut info: Single<&mut Text, With<RRCameraPosInfo>>,
+    camera: Single<&Transform, With<HomescreenCamera>>
+)
+{
+    let pos = camera.translation;
+    info.0 = format!("Camera position: X {:.2} Y {:.2} Z {:.2}", pos.x, pos.y, pos.z);
 }
 
 fn test_3d
