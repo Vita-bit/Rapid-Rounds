@@ -363,6 +363,6 @@ fn send_camera_to_server(mut to_server: MessageWriter<SendToServer>, cam_pos: Si
     }
 
     let pos = cam_pos.translation;
-    let text = format!("Camera position: {:.2} {:.2} {:.2}", pos.x, pos.y, pos.z);
+    let text = format!("[CAMINFO] Camera position: {:.2} {:.2} {:.2}", pos.x, pos.y, pos.z);
     to_server.write(SendToServer::new(DefaultChannel::ReliableOrdered, text));
 }
