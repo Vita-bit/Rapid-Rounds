@@ -4650,15 +4650,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3d595e54a326bc53c1c197b32d295e14b169e3cfeaa8dc82b529f947fba6bcf5"
 
 [[package]]
-name = "project"
-version = "0.1.0"
-dependencies = [
- "bevy",
- "bevy_renet",
- "renet",
-]
-
-[[package]]
 name = "pxfm"
 version = "0.1.30"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4746,6 +4737,15 @@ name = "range-alloc"
 version = "0.1.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ca45419789ae5a7899559e9512e58ca889e41f04f1f2445e9f4b290ceccd1d08"
+
+[[package]]
+name = "rapid-rounds"
+version = "0.1.0"
+dependencies = [
+ "bevy",
+ "bevy_renet",
+ "renet",
+]
 
 [[package]]
 name = "raw-window-handle"

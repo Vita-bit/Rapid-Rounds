@@ -5,6 +5,7 @@ use crate::homescreen::plugin::HomescreenPlugin;
 use crate::lobby::plugin::LobbyPlugin;
 use crate::session::states::AppState;
 use crate::settings::plugin::SettingsPlugin;
+use crate::client::plugin::ClientPlugin;
 
 pub struct GamePlugin;
 
@@ -17,7 +18,13 @@ impl Plugin for GamePlugin {
                     ..default()
                 }))
             .init_state::<AppState>()
-            .add_plugins((HomescreenPlugin, LobbyPlugin, SettingsPlugin))
+            .add_plugins(
+                (
+                    HomescreenPlugin,
+                    LobbyPlugin,
+                    SettingsPlugin,
+                    ClientPlugin
+                ))
             .add_systems(Update, change_window_mode.run_if(input_just_pressed(KeyCode::F11)));
     }
 }
