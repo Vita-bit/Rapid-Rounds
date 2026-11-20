@@ -1,9 +1,21 @@
 use std::{net::{IpAddr, Ipv4Addr, SocketAddr, UdpSocket}, time::SystemTime};
 use bevy::prelude::*;
-use bevy_renet::{RenetClient, RenetClientPlugin, netcode::{ClientAuthentication, NetcodeClientPlugin, NetcodeClientTransport}};
-use renet::{ConnectionConfig, DefaultChannel};
+use bevy_renet::{RenetClient, RenetClientPlugin, client_connected, netcode::{ClientAuthentication, NetcodeClientPlugin, NetcodeClientTransport}};
+use renet::{Bytes, ConnectionConfig, DefaultChannel};
 
 const SERVER_ADDR: SocketAddr = SocketAddr::new(IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)), 5000u16);
+
+#[derive(Message)]
+pub struct SendToServer {
+    pub channel: u8,
+    pub payload: Bytes,
+}
+
+impl SendToServer {
+    pub fn new(channel: DefaultChannel, payload: impl Into<Bytes>) -> Self {
+        Self { channel: channel.into(), payload: payload.into()}
+    }
+}
 
 pub struct ClientPlugin;
 
@@ -28,12 +40,15 @@ impl Plugin for ClientPlugin {
         let transport = NetcodeClientTransport::new(current_time, auth, socket).unwrap();
         app.insert_resource(transport);
 
-        app.add_systems(Update, (recieve_message_system, send_message_system));
+        app.add_message::<SendToServer>();
+        app.add_systems(Update, (recieve_message_system, send_message_system.run_if(client_connected)));
     }
 }
 
-fn send_message_system(mut client: ResMut<RenetClient>) {
-    client.send_message(DefaultChannel::ReliableOrdered, "Hello World!");
+fn send_message_system(mut client: ResMut<RenetClient>, mut outgoing: MessageReader<SendToServer>) {
+    for msg in outgoing.read() {
+        client.send_message(msg.channel, msg.payload.clone());
+    }
 }
 
 fn recieve_message_system(mut client:ResMut<RenetClient>) {

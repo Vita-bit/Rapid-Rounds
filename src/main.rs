@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use project::session::game_session::GamePlugin;
+use rapid_rounds::session::game_session::GamePlugin;
 
 fn main() {
     App::new().add_plugins(GamePlugin).run();

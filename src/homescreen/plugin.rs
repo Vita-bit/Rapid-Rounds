@@ -1,4 +1,7 @@
+use std::time::Duration;
+
 use bevy::prelude::*;
+use renet::DefaultChannel;
 use crate::session::states::*;
 use bevy::picking::hover::*;
 use bevy::ui::Pressed;
@@ -6,9 +9,13 @@ use bevy::ui_widgets::{Button, Activate, observe};
 
 use crate::homescreen::substates::choosing_game::sub_plugin::ChoosingGamePlugin;
 use crate::homescreen::substates::menu::sub_plugin::MenuPlugin;
+use crate::client::plugin::SendToServer;
 
 
 pub struct HomescreenPlugin;
+
+#[derive(Resource)]
+struct CameraSendTimer(Timer);
 
 #[derive(Component, Default)]
 pub struct HomescreenCamera {
@@ -37,6 +44,7 @@ impl Plugin for HomescreenPlugin {
     fn build(&self, app: &mut App) {
         app
             .add_sub_state::<HomescreenSubstates>()
+            .insert_resource(CameraSendTimer(Timer::new(Duration::from_secs(1u64), TimerMode::Repeating)))
             .add_plugins(
                 (
                     ChoosingGamePlugin,
@@ -59,7 +67,8 @@ impl Plugin for HomescreenPlugin {
                         update_startgame_button_appearance,
                         update_settings_button_appearance,
                         move_camera_input,
-                        update_camera_info
+                        update_camera_info,
+                        send_camera_to_server
                     )
                     .run_if(in_state(AppState::Homescreen))
                 );
@@ -346,4 +355,14 @@ fn test_3d
         Transform::from_xyz(4f32, 8f32, 4f32).looking_at(Vec3::ZERO, Vec3::Y),
         DespawnOnExit(AppState::Homescreen),
     ));
+}
+
+fn send_camera_to_server(mut to_server: MessageWriter<SendToServer>, cam_pos: Single<&Transform, With<HomescreenCamera>>, time: Res<Time>, mut timer: ResMut<CameraSendTimer>) {
+    if !timer.0.tick(time.delta()).just_finished() {
+        return;
+    }
+
+    let pos = cam_pos.translation;
+    let text = format!("Camera position: {:.2} {:.2} {:.2}", pos.x, pos.y, pos.z);
+    to_server.write(SendToServer::new(DefaultChannel::ReliableOrdered, text));
 }
