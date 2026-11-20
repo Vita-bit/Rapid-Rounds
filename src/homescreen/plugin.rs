@@ -37,7 +37,11 @@ impl Plugin for HomescreenPlugin {
     fn build(&self, app: &mut App) {
         app
             .add_sub_state::<HomescreenSubstates>()
-            .add_plugins((ChoosingGamePlugin, MenuPlugin))
+            .add_plugins(
+                (
+                    ChoosingGamePlugin,
+                    MenuPlugin
+                ))
             .add_systems
                 (
                     OnEnter(AppState::Homescreen),

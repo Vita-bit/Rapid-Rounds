@@ -8,3 +8,5 @@ opt-level = 3
 
 [dependencies]
 bevy = "0.20.1"
+bevy_renet = "6.0.0"
+renet = "2.0.1"
