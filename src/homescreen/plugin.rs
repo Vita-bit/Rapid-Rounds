@@ -4,7 +4,16 @@ use bevy::picking::hover::*;
 use bevy::ui::Pressed;
 use bevy::ui_widgets::{Button, Activate, observe};
 
+use crate::homescreen::substates::choosing_game::sub_plugin::ChoosingGamePlugin;
+use crate::homescreen::substates::menu::sub_plugin::MenuPlugin;
+
+
 pub struct HomescreenPlugin;
+
+#[derive(Component, Default)]
+pub struct HomescreenCamera {
+    velocity: Vec3,
+}
 
 #[derive(Component)]
 struct RRStartgameButton;
@@ -15,11 +24,21 @@ struct RRSettingsButton;
 #[derive(Component)]
 struct RRJoinGameButton;
 
+#[derive(SubStates, Clone, Eq, PartialEq, Hash, Debug, Default)]
+#[source(AppState = AppState::Homescreen)]
+pub enum HomescreenSubstates {
+    #[default]
+    Menu,
+    ChoosingGame
+}
+
 impl Plugin for HomescreenPlugin {
     fn build(&self, app: &mut App) {
         app
+            .add_sub_state::<HomescreenSubstates>()
+            .add_plugins((ChoosingGamePlugin, MenuPlugin))
             .add_systems(OnEnter(AppState::Homescreen), (setup_homescreen, setup_homescreen_buttons, test_3d).chain())
-            .add_systems(Update, (homescreen_input, update_startgame_button_appearance, update_settings_button_appearance, update_join_game_button_appearance).run_if(in_state(AppState::Homescreen)));
+            .add_systems(Update, (homescreen_input, update_startgame_button_appearance, update_settings_button_appearance, update_join_game_button_appearance, move_camera_input).run_if(in_state(AppState::Homescreen)));
     }
 }
 
@@ -28,6 +47,7 @@ fn setup_homescreen(mut commands: Commands) {
 
     commands.spawn((
         Camera3d::default(),
+        HomescreenCamera::default(),
         Transform::from_xyz(15f32, 5f32, 10f32).looking_at(Vec3::ZERO, Vec3::Y),
         DespawnOnExit(AppState::Homescreen),
     ));
@@ -37,6 +57,40 @@ fn homescreen_input(keys: Res<ButtonInput<KeyCode>>, mut next: ResMut<NextState<
     if keys.just_pressed(KeyCode::Digit1) {
         next.set(AppState::Lobby);
     }
+}
+
+fn move_camera_input(keys: Res<ButtonInput<KeyCode>>, time: Res<Time>, camera: Single<(&mut Transform, &mut HomescreenCamera)>) {
+    let (mut transform, mut cam) = camera.into_inner();
+
+    let speed = 0.5f32;
+    let forward = transform.forward().with_y(0f32).normalize_or_zero();
+    let right = transform.right().with_y(0f32).normalize_or_zero();
+    let mut dir = Vec3::ZERO;
+
+    if keys.pressed(KeyCode::KeyW) {
+        dir += forward;
+    }
+    if keys.pressed(KeyCode::KeyS) {
+        dir -= forward;
+    }
+    if keys.pressed(KeyCode::KeyD) {
+        dir += right;
+    }
+    if keys.pressed(KeyCode::KeyA) {
+        dir -= right;
+    }
+    if keys.pressed(KeyCode::Space) {
+        dir += Vec3::Y;
+    }
+    if keys.pressed(KeyCode::ShiftLeft) {
+        dir -= Vec3::Y;
+    }
+
+    let target_velocity = dir.normalize_or_zero() * speed;
+    let delta_time = time.delta_secs();
+
+    cam.velocity.smooth_nudge(&target_velocity, 6f32, delta_time);
+    transform.translation += cam.velocity;
 }
 
 fn startgame_button() -> impl Bundle {
@@ -145,8 +199,8 @@ fn setup_homescreen_buttons(mut commands: Commands) {
             ),
             (
                 join_game_button(),
-                observe(|_activate: On<Activate>| {
-
+                observe(|_activate: On<Activate>, mut next: ResMut<NextState<HomescreenSubstates>>| {
+                    next.set(HomescreenSubstates::ChoosingGame);
                 }),
             )
         ],
