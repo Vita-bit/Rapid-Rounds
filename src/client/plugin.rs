@@ -1,7 +1,10 @@
 use std::{net::{IpAddr, Ipv4Addr, SocketAddr, UdpSocket}, time::{SystemTime, Duration}};
+
 use bevy::prelude::*;
+
 use bevy_renet::{RenetClient, RenetClientPlugin, client_connected, netcode::{ClientAuthentication, NetcodeClientPlugin, NetcodeClientTransport}};
 use renet::{Bytes, ConnectionConfig, DefaultChannel};
+
 use crate::client::response::plugin::ResponsePlugin;
 
 const SERVER_ADDR: SocketAddr = SocketAddr::new(IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)), 5000u16);

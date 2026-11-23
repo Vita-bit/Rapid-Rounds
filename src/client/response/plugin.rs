@@ -1,6 +1,8 @@
 use bevy::prelude::*;
+
 use bevy_renet::RenetClient;
 use renet::DefaultChannel;
+
 use crate::client::plugin::SendToServer;
 
 pub struct ResponsePlugin;

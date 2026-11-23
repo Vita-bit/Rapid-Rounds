@@ -1,9 +1,10 @@
 use bevy::input::common_conditions::*;
 use bevy::prelude::*;
 use bevy::window::*;
+
+use crate::session::states::AppState;
 use crate::homescreen::plugin::HomescreenPlugin;
 use crate::lobby::plugin::LobbyPlugin;
-use crate::session::states::AppState;
 use crate::settings::plugin::SettingsPlugin;
 use crate::client::plugin::ClientPlugin;
 
@@ -31,9 +32,10 @@ impl Plugin for GamePlugin {
 
 fn create_game_window() -> Window {
     Window {
-        title: "Game".to_string(),
+        title: "Rapid Rounds".to_string(),
         mode: WindowMode::BorderlessFullscreen(MonitorSelection::Primary),
         resizable: true,
+        name: Some("Rapid Rounds".to_string()),
         ..default()
     }
 }

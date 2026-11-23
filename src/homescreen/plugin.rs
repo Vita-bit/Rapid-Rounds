@@ -1,16 +1,16 @@
 use std::time::Duration;
 
 use bevy::prelude::*;
-use renet::DefaultChannel;
-use crate::session::states::*;
 use bevy::picking::hover::*;
 use bevy::ui::Pressed;
 use bevy::ui_widgets::{Button, Activate, observe};
 
+use renet::DefaultChannel;
+
+use crate::session::states::*;
 use crate::homescreen::substates::choosing_game::sub_plugin::ChoosingGamePlugin;
 use crate::homescreen::substates::menu::sub_plugin::MenuPlugin;
 use crate::client::plugin::SendToServer;
-
 
 pub struct HomescreenPlugin;
 
