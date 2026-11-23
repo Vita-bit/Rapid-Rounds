@@ -13,7 +13,7 @@ impl Plugin for ResponsePlugin {
 
 fn recieve_message_system(mut client: ResMut<RenetClient>) {
     while let Some(message) = client.receive_message(DefaultChannel::ReliableOrdered) {
-        let text = String::from_utf8(message.to_vec()).unwrap();
+        let text: String = String::from_utf8(message.to_vec()).unwrap();
         match text.split_once(" ") {
             Some((identifier, rest)) => println!("Server sent {identifier}: {rest}"),
             _ => println!("Server sent: {text}"),

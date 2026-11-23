@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use crate::session::states::*;
+use crate::{client::plugin::SendToServer, session::states::*};
 
 pub struct LobbyPlugin;
 
@@ -11,8 +11,11 @@ impl Plugin for LobbyPlugin {
     }
 }
 
-fn setup_lobby(mut commands: Commands) {
+fn setup_lobby(mut commands: Commands, mut to_server: MessageWriter<SendToServer>) {
     commands.insert_resource(ClearColor(Color::hsl(0.1f32, 0.4f32, 0.1f32)));
+
+    let text: String = String::from("[LOBBYCREATEREQUEST]");
+    to_server.write(SendToServer::new(renet::DefaultChannel::ReliableOrdered, text));
 
     commands.spawn((
         Camera3d::default(),

@@ -1,4 +1,4 @@
-use std::{net::{IpAddr, Ipv4Addr, SocketAddr, UdpSocket}, time::SystemTime};
+use std::{net::{IpAddr, Ipv4Addr, SocketAddr, UdpSocket}, time::{SystemTime, Duration}};
 use bevy::prelude::*;
 use bevy_renet::{RenetClient, RenetClientPlugin, client_connected, netcode::{ClientAuthentication, NetcodeClientPlugin, NetcodeClientTransport}};
 use renet::{Bytes, ConnectionConfig, DefaultChannel};
@@ -25,20 +25,20 @@ impl Plugin for ClientPlugin {
         app: &mut App) {
         app.add_plugins((RenetClientPlugin, ResponsePlugin));
 
-        let client = RenetClient::new(ConnectionConfig::default());
+        let client: RenetClient = RenetClient::new(ConnectionConfig::default());
         app.insert_resource(client);
 
         app.add_plugins(NetcodeClientPlugin);
 
-        let auth = ClientAuthentication::Unsecure {
+        let auth: ClientAuthentication = ClientAuthentication::Unsecure {
             server_addr: SERVER_ADDR,
             client_id: 0,
             user_data: None,
             protocol_id: 0,
         };
-        let socket = UdpSocket::bind("127.0.0.1:0").unwrap();
-        let current_time = SystemTime::now().duration_since(SystemTime::UNIX_EPOCH).unwrap();
-        let transport = NetcodeClientTransport::new(current_time, auth, socket).unwrap();
+        let socket: UdpSocket = UdpSocket::bind("127.0.0.1:0").unwrap();
+        let current_time: Duration = SystemTime::now().duration_since(SystemTime::UNIX_EPOCH).unwrap();
+        let transport: NetcodeClientTransport = NetcodeClientTransport::new(current_time, auth, socket).unwrap();
         app.insert_resource(transport);
 
         app.add_message::<SendToServer>();

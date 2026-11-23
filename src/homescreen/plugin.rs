@@ -101,12 +101,12 @@ fn move_camera_input
 {
     let (mut transform, mut cam) = camera.into_inner();
 
-    let speed = 0.5f32;
-    let smoothing = 6f32;
-    let forward = transform.forward().with_y(0f32).normalize_or_zero();
-    let right = transform.right().with_y(0f32).normalize_or_zero();
+    let speed: f32 = 0.5f32;
+    let smoothing: f32 = 6f32;
+    let forward: Vec3 = transform.forward().with_y(0f32).normalize_or_zero();
+    let right: Vec3 = transform.right().with_y(0f32).normalize_or_zero();
 
-    let mut dir = Vec3::ZERO;
+    let mut dir: Vec3 = Vec3::ZERO;
 
     if keys.pressed(KeyCode::KeyW) {
         dir += forward;
@@ -127,8 +127,8 @@ fn move_camera_input
         dir -= Vec3::Y;
     }
 
-    let target_velocity = dir.normalize_or_zero() * speed;
-    let delta_time = time.delta_secs();
+    let target_velocity: Vec3 = dir.normalize_or_zero() * speed;
+    let delta_time: f32 = time.delta_secs();
 
     cam.velocity.smooth_nudge(&target_velocity, smoothing, delta_time);
     transform.translation += cam.velocity;
@@ -331,7 +331,7 @@ fn update_camera_info
     camera: Single<&Transform, With<HomescreenCamera>>
 )
 {
-    let pos = camera.translation;
+    let pos: Vec3 = camera.translation;
     info.0 = format!("Camera position: X {:.2} Y {:.2} Z {:.2}", pos.x, pos.y, pos.z);
 }
 
@@ -362,7 +362,7 @@ fn send_camera_to_server(mut to_server: MessageWriter<SendToServer>, cam_pos: Si
         return;
     }
 
-    let pos = cam_pos.translation;
-    let text = format!("[CAMINFO] Camera position: {:.2} {:.2} {:.2}", pos.x, pos.y, pos.z);
+    let pos: Vec3 = cam_pos.translation;
+    let text: String = format!("[CAMINFO] {:.2} {:.2} {:.2}", pos.x, pos.y, pos.z);
     to_server.write(SendToServer::new(DefaultChannel::ReliableOrdered, text));
 }
