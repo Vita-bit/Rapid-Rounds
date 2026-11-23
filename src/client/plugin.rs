@@ -2,6 +2,7 @@ use std::{net::{IpAddr, Ipv4Addr, SocketAddr, UdpSocket}, time::SystemTime};
 use bevy::prelude::*;
 use bevy_renet::{RenetClient, RenetClientPlugin, client_connected, netcode::{ClientAuthentication, NetcodeClientPlugin, NetcodeClientTransport}};
 use renet::{Bytes, ConnectionConfig, DefaultChannel};
+use crate::client::response::plugin::ResponsePlugin;
 
 const SERVER_ADDR: SocketAddr = SocketAddr::new(IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)), 5000u16);
 
@@ -22,7 +23,7 @@ pub struct ClientPlugin;
 impl Plugin for ClientPlugin {
     fn build(&self, 
         app: &mut App) {
-        app.add_plugins(RenetClientPlugin);
+        app.add_plugins((RenetClientPlugin, ResponsePlugin));
 
         let client = RenetClient::new(ConnectionConfig::default());
         app.insert_resource(client);
@@ -41,18 +42,12 @@ impl Plugin for ClientPlugin {
         app.insert_resource(transport);
 
         app.add_message::<SendToServer>();
-        app.add_systems(Update, (recieve_message_system, send_message_system.run_if(client_connected)));
+        app.add_systems(Update, send_message_system.run_if(client_connected));
     }
 }
 
 fn send_message_system(mut client: ResMut<RenetClient>, mut outgoing: MessageReader<SendToServer>) {
     for msg in outgoing.read() {
         client.send_message(msg.channel, msg.payload.clone());
-    }
-}
-
-fn recieve_message_system(mut client:ResMut<RenetClient>) {
-    while let Some(message) = client.receive_message(DefaultChannel::ReliableOrdered) {
-        println!("Server responded {}", String::from_utf8(message.to_vec()).unwrap());
     }
 }
